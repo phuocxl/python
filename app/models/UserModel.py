@@ -101,7 +101,7 @@ class User:
         query = """
             UPDATE user
             SET username=%s, password=%s, email=%s, role=%s, status=%s
-            WHERE MaUser=%s
+            WHERE ma_user=%s
         """
         with DatabaseConnection() as conn:
             if conn:

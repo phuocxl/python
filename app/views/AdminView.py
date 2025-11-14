@@ -1,45 +1,79 @@
-from tkinter import ttk
+import tkinter as tk
 
+from app.views.RegisterMedicalAdminView import RegisterMedicalAdminView
 from app.views.UserView import UserView
 
 
 class AdminView:
+    """Trang Admin chính với các page nằm trong frame lớn"""
     def __init__(self, parent, user):
-        """
-        parent: tk.Tk hoặc tk.Frame
-        user: dict chứa thông tin user hiện tại
-        """
         self.parent = parent
         self.user = user
 
-        self.main_frame = ttk.Frame(parent, padding=20)
-        self.main_frame.pack(fill="both", expand=True)
+        # Nếu parent là root, center root và set size
+        if isinstance(parent, tk.Tk) or isinstance(parent, tk.Toplevel):
+            window_width = 1200
+            window_height = 720
+            self.center_window(parent, window_width, window_height)
 
-        self.build_ui()
+        # Frame chính Admin
+        self.admin_frame = tk.Frame(parent, bg="#f7f7f7")
+        self.admin_frame.pack(fill="both", expand=True)
 
-    def build_ui(self):
-        """Xây dựng giao diện admin"""
-        # Title
-        welcome_label = ttk.Label(self.main_frame, text=f"Xin chào {self.user.get('username', '')}",
-                                  font=("San Francisco", 16, "bold"))
-        welcome_label.pack(pady=(0, 15))
+        # Toolbar/nút chức năng Admin
+        self.toolbar = tk.Frame(self.admin_frame, bg="#d9d9d9", height=40)
+        self.toolbar.pack(side="top", fill="x")
 
-        subtitle_label = ttk.Label(self.main_frame, text="Chọn chức năng:",
-                                   font=("San Francisco", 13))
-        subtitle_label.pack(pady=(0, 10))
+        self.btn_user = tk.Button(
+            self.toolbar, text="Quản lý User", width=20,
+            command=self.show_user_page
+        )
+        self.btn_register = tk.Button(
+            self.toolbar, text="Quản lý Đăng ký khám", width=20,
+            command=self.show_register_page
+        )
+        self.btn_exit = tk.Button(
+            self.toolbar, text="Thoát", width=20,
+            command=self.exit_admin
+        )
 
-        # Button frame
-        btn_frame = ttk.Frame(self.main_frame)
-        btn_frame.pack(pady=10)
+        for btn in [self.btn_user, self.btn_register, self.btn_exit]:
+            btn.pack(side="left", padx=5, pady=5)
 
-        # Quản lý User
-        ttk.Button(btn_frame, text="Quản lý User", width=25, command=self.open_user_view).pack(pady=5)
+        # Frame hiển thị nội dung page
+        self.content_frame = tk.Frame(self.admin_frame, bg="#f7f7f7")
+        self.content_frame.pack(fill="both", expand=True)
 
-        # TODO: Thêm các chức năng khác, ví dụ quản lý Bác sĩ, Lễ tân, Kế toán...
-        # ttk.Button(btn_frame, text="Quản lý Bác sĩ", width=25, command=self.open_doctor_view).pack(pady=5)
-        # ttk.Button(btn_frame, text="Quản lý Lễ tân", width=25, command=self.open_reception_view).pack(pady=5)
+        # Trang mặc định (chào mừng)
+        self.show_home_page()
 
-    def open_user_view(self):
-        """Mở UserView mà không destroy parent"""
-        self.main_frame.destroy()
-        UserView(self.parent)
+    # -------------------------------
+    def center_window(self, window, width, height):
+        screen_width = window.winfo_screenwidth()
+        screen_height = window.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        window.geometry(f"{width}x{height}+{x}+{y}")
+
+    def clear_content(self):
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+    def show_home_page(self):
+        self.clear_content()
+        label = tk.Label(
+            self.content_frame, text=f"Xin chào {self.user.get('username', '')}!\nChọn chức năng ở trên.",
+            font=("San Francisco", 18), bg="#f7f7f7"
+        )
+        label.pack(expand=True)
+
+    def show_user_page(self):
+        self.clear_content()
+        UserView(self.content_frame)
+
+    def show_register_page(self):
+        self.clear_content()
+        RegisterMedicalAdminView(self.content_frame)
+
+    def exit_admin(self):
+        self.admin_frame.destroy()
