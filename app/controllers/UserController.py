@@ -1,29 +1,34 @@
 from app.models.UserModel import User
 
-
 class UserController:
+    """Controller quản lý User"""
+
     @staticmethod
     def get_all_users():
-        return User.get_all_users()
+        return User.get_all_users()  # trả về list dict: id, username, role, email
 
     @staticmethod
-    def create_user(username, password, email, role, status):
-        return User.add_user(username, password, email, role, status)
+    def create_user(data: dict) -> bool:
+        return User.add_user(
+            username=data.get("username"),
+            password=data.get("password", "123456"),  # mặc định password
+            email=data.get("email"),
+            role=data.get("role"),
+            status="active"
+        )
 
     @staticmethod
-    def update_user(mauser, username, password, email, role, status):
-        return User.update_user(mauser, username, password, email, role, status)
+    def update_user(user_id, data: dict) -> bool:
+        password = data.get("password")
+        return User.update_user(
+            user_id,
+            data.get("username"),
+            password,
+            data.get("email"),
+            data.get("role"),
+            "active"
+        )
 
     @staticmethod
-    def login(username, password):
-        return User.check_user(username, password)
-
-    @staticmethod
-    def delete_user(ma_user: int) -> bool:
-        """
-        Xóa user đã chọn.
-        Logic:
-        - Không xóa user có role admin
-        - Thông báo lỗi/thành công được xử lý trong Model
-        """
-        return User.delete_user_db(ma_user)
+    def delete_user(user_id: int) -> bool:
+        return User.delete_user_db(user_id)
