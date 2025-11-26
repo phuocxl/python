@@ -11,6 +11,8 @@ class RegisterMedical:
                  diaChi="",
                  sdt="",
                  ngayDangKy=None,
+                 chuyenKhoa="",
+                 bacSi="",
                  trangThai="pending"):
         self.maDangKy = maDangKy
         self.tenBenhNhan = tenBenhNhan
@@ -19,6 +21,8 @@ class RegisterMedical:
         self.diaChi = diaChi
         self.sdt = sdt
         self.ngayDangKy = ngayDangKy
+        self.chuyenKhoa = chuyenKhoa
+        self.bacSi = bacSi
         self.trangThai = trangThai
 
     # -----------------------------------
@@ -27,7 +31,6 @@ class RegisterMedical:
     @staticmethod
     def add_register(data: dict) -> bool:
         """
-        Thêm mới lượt đăng ký khám bệnh
         data = {
             "tenBenhNhan": "...",
             "ngaySinh": "...",
@@ -35,14 +38,19 @@ class RegisterMedical:
             "diaChi": "...",
             "sdt": "...",
             "ngayDangKy": "...",
+            "chuyenKhoa": "...",
+            "bacSi": "...",
             "trangThai": "pending"
         }
         """
+
         query = """
             INSERT INTO register_medical
-            (tenBenhNhan, ngaySinh, gioiTinh, diaChi, sdt, ngayDangKy, trangThai)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (tenBenhNhan, ngaySinh, gioiTinh, diaChi, sdt, ngayDangKy, 
+             chuyenKhoa, bacSi, trangThai)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
+
         values = (
             data["tenBenhNhan"],
             data["ngaySinh"],
@@ -50,6 +58,8 @@ class RegisterMedical:
             data["diaChi"],
             data["sdt"],
             data["ngayDangKy"],
+            data["chuyenKhoa"],
+            data["bacSi"],
             data.get("trangThai", "pending")
         )
 
@@ -72,7 +82,6 @@ class RegisterMedical:
     # -----------------------------------
     @staticmethod
     def get_all_registers():
-        """Lấy toàn bộ danh sách đăng ký khám"""
         query = "SELECT * FROM register_medical ORDER BY ngayDangKy DESC"
 
         with DatabaseConnection() as conn:
@@ -102,14 +111,12 @@ class RegisterMedical:
     # -----------------------------------
     @staticmethod
     def update_register(maDangKy, data):
-        """
-        Cập nhật thông tin đăng ký khám
-        data có thể giống như add_register
-        """
         query = """
             UPDATE register_medical
             SET tenBenhNhan=%s, ngaySinh=%s, gioiTinh=%s,
-                diaChi=%s, sdt=%s, ngayDangKy=%s, trangThai=%s
+                diaChi=%s, sdt=%s, ngayDangKy=%s,
+                chuyenKhoa=%s, bacSi=%s,
+                trangThai=%s
             WHERE maDangKy=%s
         """
 
@@ -120,6 +127,8 @@ class RegisterMedical:
             data["diaChi"],
             data["sdt"],
             data["ngayDangKy"],
+            data["chuyenKhoa"],
+            data["bacSi"],
             data.get("trangThai", "pending"),
             maDangKy
         )
