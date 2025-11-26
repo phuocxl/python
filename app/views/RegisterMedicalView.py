@@ -7,18 +7,23 @@ class RegisterMedicalView:
     """Form đăng ký khám bệnh (có thể nhúng trong frame khác hoặc chạy độc lập)"""
 
     def __init__(self, parent, standalone=False):
-        """
-        parent: tk.Frame hoặc tk.Tk
-        standalone: nếu True -> tạo cửa sổ Tk độc lập
-        """
         if standalone:
             self.window = tk.Tk()
             self.window.title("Đăng ký khám bệnh")
             self.window.geometry("1200x900")
             self.window.resizable(False, False)
-            parent = self.window  # vẽ vào window
+            parent = self.window
         else:
-            self.window = parent  # nhúng vào frame parent
+            self.window = parent
+
+        # ---- Danh sách bác sĩ theo chuyên khoa ----
+        self.doctors_by_specialty = {
+            "Nội tổng quát": ["BS. Nguyễn Văn An", "BS. Trần Thị Bình", "BS. Lê Minh Quang"],
+            "Nhi khoa": ["BS. Võ Mai Anh", "BS. Nguyễn Thanh Bình"],
+            "Tim mạch": ["BS. Trần Xuân Hòa", "BS. Đặng Thụy Phương"],
+            "Da liễu": ["BS. Phạm Hoài Nam", "BS. Lê Quỳnh Như"],
+            "Tai-Mũi-Họng": ["BS. Hồ Văn Khải", "BS. Lý Trọng Đức"]
+        }
 
         self.setup_styles()
         self.build_form(parent)
@@ -47,11 +52,10 @@ class RegisterMedicalView:
     # -------------------------------------------------------------
     def build_form(self, parent):
         container = tk.Frame(parent, bg="white", bd=0, highlightthickness=0)
-        container.place(relx=0.5, rely=0.5, anchor="center", width=460, height=450)
+        container.place(relx=0.5, rely=0.5, anchor="center", width=750, height=650)
 
         title = tk.Label(container, text="Đăng ký khám bệnh",
-                         font=("SF Pro Display", 20, "bold"),
-                         bg="white", fg="#222")
+                         font=("SF Pro Display", 20, "bold"), bg="white", fg="#222")
         title.pack(pady=18)
 
         form = ttk.Frame(container)
@@ -84,17 +88,41 @@ class RegisterMedicalView:
         self.sdt_entry = ttk.Entry(form, style="MacEntry.TEntry")
         self.sdt_entry.grid(row=4, column=1, pady=6, sticky="ew")
 
-        # --- Ngày đăng ký ---
-        ttk.Label(form, text="Ngày đăng ký (YYYY-MM-DD):", font=("SF Pro Text", 12)).grid(row=5, column=0, sticky="w")
-        self.ngayDangKy_entry = ttk.Entry(form, style="MacEntry.TEntry")
-        self.ngayDangKy_entry.grid(row=5, column=1, pady=6, sticky="ew")
+        # --- Chuyên khoa ---
+        ttk.Label(form, text="Chuyên khoa:", font=("SF Pro Text", 12)).grid(row=5, column=0, sticky="w")
+        self.specialty_combo = ttk.Combobox(
+            form, values=list(self.doctors_by_specialty.keys()),
+            state="readonly", style="MacCombo.TCombobox"
+        )
+        self.specialty_combo.grid(row=5, column=1, pady=6, sticky="ew")
+        self.specialty_combo.bind("<<ComboboxSelected>>", self.update_doctor_list)
 
-        # --- Button ---
+        # --- Bác sĩ ---
+        ttk.Label(form, text="Bác sĩ phụ trách:", font=("SF Pro Text", 12)).grid(row=6, column=0, sticky="w")
+        self.doctor_combo = ttk.Combobox(form, values=[], state="readonly", style="MacCombo.TCombobox")
+        self.doctor_combo.grid(row=6, column=1, pady=6, sticky="ew")
+
+        # --- Ngày đăng ký ---
+        ttk.Label(form, text="Ngày đăng ký (YYYY-MM-DD):", font=("SF Pro Text", 12)).grid(row=7, column=0, sticky="w")
+        self.ngayDangKy_entry = ttk.Entry(form, style="MacEntry.TEntry")
+        self.ngayDangKy_entry.grid(row=7, column=1, pady=6, sticky="ew")
+
         btn = ttk.Button(container, text="Đăng ký khám bệnh", style="MacButton.TButton",
                          command=self.submit_register)
         btn.pack(pady=18)
 
         form.columnconfigure(1, weight=1)
+
+    # -------------------------------------------------------------
+    def update_doctor_list(self, event=None):
+        specialty = self.specialty_combo.get()
+        doctors = self.doctors_by_specialty.get(specialty, [])
+        self.doctor_combo["values"] = doctors
+
+        if doctors:
+            self.doctor_combo.set(doctors[0])
+        else:
+            self.doctor_combo.set("")
 
     # -------------------------------------------------------------
     def submit_register(self):
@@ -105,6 +133,8 @@ class RegisterMedicalView:
             "diaChi": self.diaChi_entry.get().strip(),
             "sdt": self.sdt_entry.get().strip(),
             "ngayDangKy": self.ngayDangKy_entry.get().strip(),
+            "chuyenKhoa": self.specialty_combo.get(),
+            "bacSi": self.doctor_combo.get(),
             "trangThai": "pending"
         }
 
