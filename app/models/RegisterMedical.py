@@ -46,7 +46,7 @@ class RegisterMedical:
 
         query = """
             INSERT INTO register_medical
-            (tenBenhNhan, ngaySinh, gioiTinh, diaChi, sdt, ngayDangKy, 
+            (tenBenhNhan, ngaySinh, gioiTinh, diaChi, sdt, ngayDangKy,
              chuyenKhoa, bacSi, trangThai)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
@@ -166,3 +166,52 @@ class RegisterMedical:
                     return False
                 finally:
                     cursor.close()
+
+    # -----------------------------------
+    # SEARCH BY PHONE
+    # -----------------------------------
+    @staticmethod
+    def get_by_phone(sdt: str):
+        """Tìm kiếm lịch đăng ký theo số điện thoại"""
+        query = """
+            SELECT * FROM register_medical
+            WHERE sdt = %s
+            ORDER BY ngayDangKy DESC
+        """
+
+        with DatabaseConnection() as conn:
+            if conn:
+                cursor = conn.cursor(dictionary=True)
+                try:
+                    cursor.execute(query, (sdt,))
+                    result = cursor.fetchall()
+                    return result
+                except Exception as e:
+                    print(f"[ERROR] Tìm kiếm theo SĐT: {e}")
+                    return []
+                finally:
+                    cursor.close()
+        return []
+
+    # -----------------------------------
+    # UPDATE STATUS
+    # -----------------------------------
+    @staticmethod
+    def update_status(maDangKy, trangThai):
+        """Cập nhật trạng thái đăng ký"""
+        query = "UPDATE register_medical SET trangThai=%s WHERE maDangKy=%s"
+
+        with DatabaseConnection() as conn:
+            if conn:
+                cursor = conn.cursor()
+                try:
+                    cursor.execute(query, (trangThai, maDangKy))
+                    conn.commit()
+                    print(f"[INFO] Đã cập nhật trạng thái: {trangThai}")
+                    return True
+                except Exception as e:
+                    print(f"[ERROR] Cập nhật trạng thái: {e}")
+                    return False
+                finally:
+                    cursor.close()
+        return False
